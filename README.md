@@ -15,8 +15,8 @@ Set this flag to strip timestamps out of the built image and make it reproducibl
 ```
 
 This will create a consistent image hash:
-
-* `securebuild-kaniko@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1`
+ 
+* `securebuild-kaniko@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935`
 
 In this tutorial, we will:
 
@@ -70,7 +70,7 @@ export PROJECT_ID=`gcloud config get-value core/project`
 export PROJECT_NUMBER=`gcloud projects describe $PROJECT_ID --format='value(projectNumber)'`
 echo $PROJECT_ID
 
-## the projectID i used for this demo is PROJECT_ID=cosign-test-kaniko-1
+## the projectID i used for this demo is PROJECT_ID=cosign-test-kaniko-1-384813
 
 gcloud auth application-default login
 
@@ -137,7 +137,7 @@ gsutil iam ch serviceAccount:cosign@$PROJECT_ID.iam.gserviceaccount.com:objectAd
 ### Build image
 
 ```bash
-# cd /app
+cd /app
 gcloud beta builds submit --config=cloudbuild.yaml --machine-type=n1-highcpu-32
 
 # optionally create the application sbom and sign it with the same cosign keypair
@@ -168,13 +168,13 @@ gcloud kms keys versions get-public-key 1  \
 
 # verify using the local key 
 cosign verify --key kms_pub.pem   \
-   us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1  | jq '.'
+   us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935  | jq '.'
 
 # or by api
 cosign verify --key gcpkms://projects/$PROJECT_ID/locations/global/keyRings/cosignkr/cryptoKeys/key1/cryptoKeyVersions/1 \
-      us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1 | jq '.'
+      us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935 | jq '.'
 
-Verification for us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1 --
+Verification for us-central1-docker.pkg.dev/cosign-test-kaniko-1-384813/repo1/securebuild@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935 --
 The following checks were performed on each of these signatures:
   - The cosign claims were validated
   - The signatures were verified against the specified public key
@@ -182,10 +182,10 @@ The following checks were performed on each of these signatures:
   {
     "critical": {
       "identity": {
-        "docker-reference": "us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild"
+        "docker-reference": "us-central1-docker.pkg.dev/cosign-test-kaniko-1-384813/repo1/securebuild"
       },
       "image": {
-        "docker-manifest-digest": "sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1"
+        "docker-manifest-digest": "sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935"
       },
       "type": "cosign container image signature"
     },
@@ -197,19 +197,22 @@ The following checks were performed on each of these signatures:
 
 
 
-COSIGN_EXPERIMENTAL=1  cosign verify  us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1 | jq '.'
+COSIGN_EXPERIMENTAL=1  cosign verify  us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935 | jq '.'
 
 
 rekor-cli search --rekor_server https://rekor.sigstore.dev \
    --sha  05066f8e20a18df98be5050789b8935891908a921e3aabeed2d0378f1c236d88
+    Found matching entries (listed by UUID):
+    24296fb24b8ad77ae55e70f2c85f119946322c47d38dde1409cf760a8011a5dd180b01309095cc3a
+
 
 ## note, ifyou wanted to use the project ID is used in this repo to upload to rekor, set export PROJECT_ID=cosign-test-kaniko
 rekor-cli search --rekor_server https://rekor.sigstore.dev  --email cosign@$PROJECT_ID.iam.gserviceaccount.com
 
 Found matching entries (listed by UUID):
-24296fb24b8ad77a868630095549dbe5dcbae06f9f447ba0c7817908ce1d782c93a4440226e15e29
-24296fb24b8ad77abac2456499de9294a85a697e4ef17ae8d2693aa6b7e875f89745044385131e1c
-24296fb24b8ad77af174e0898b660977bf7edcd85e714b120e158ee7ce7d144b9500de5602665516
+24296fb24b8ad77a6802c1ef56671cfb7f1df54a56914eeb5f7618b0906459f0f45135eebc52e8e2
+24296fb24b8ad77a13b7e3f46e69cdb3b7ffef0b0d1c5e48e5cb5480e08ab1fa4528a9a0f1529f11
+24296fb24b8ad77a61fa48c55a19124687ede29f830a6478d0316128ed4785cefcbde5d1423275e8
 ```
 
 
@@ -217,10 +220,10 @@ custom predicate
 
 ```bash
 rekor-cli get --rekor_server https://rekor.sigstore.dev \
-   --uuid 24296fb24b8ad77a868630095549dbe5dcbae06f9f447ba0c7817908ce1d782c93a4440226e15e29
+   --uuid 24296fb24b8ad77a6802c1ef56671cfb7f1df54a56914eeb5f7618b0906459f0f45135eebc52e8e2
 
 LogID: c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d
-Attestation: {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"cosign.sigstore.dev/attestation/v1","subject":[{"name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild","digest":{"sha256":"bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1"}}],"predicate":{"Data":"{ \"projectid\": \"cosign-test-kaniko-1\", \"buildid\": \"a08b8033-3a26-4c5e-8d80-73ca3238ddbe\", \"foo\":\"bar\", \"commitsha\": \"fc9286ba352fd0207dbf3d3bc0bad0198ab5d9ec\", \"name_hash\": \"$(cat /workspace/name_hash.txt)\"}","Timestamp":"2023-04-22T19:56:23Z"}}
+Attestation: {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"cosign.sigstore.dev/attestation/v1","subject":[{"name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild","digest":{"sha256":"5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935"}}],"predicate":{"Data":"{ \"projectid\": \"cosign-test-kaniko-1\", \"buildid\": \"a08b8033-3a26-4c5e-8d80-73ca3238ddbe\", \"foo\":\"bar\", \"commitsha\": \"fc9286ba352fd0207dbf3d3bc0bad0198ab5d9ec\", \"name_hash\": \"$(cat /workspace/name_hash.txt)\"}","Timestamp":"2023-04-22T19:56:23Z"}}
 Index: 18669807
 IntegratedTime: 2023-04-22T19:56:23Z
 UUID: 24296fb24b8ad77a868630095549dbe5dcbae06f9f447ba0c7817908ce1d782c93a4440226e15e29
@@ -243,7 +246,7 @@ Body: {
 
 ```bash
 rekor-cli get --rekor_server https://rekor.sigstore.dev \
-   --uuid 24296fb24b8ad77abac2456499de9294a85a697e4ef17ae8d2693aa6b7e875f89745044385131e1c     
+   --uuid 24296fb24b8ad77a13b7e3f46e69cdb3b7ffef0b0d1c5e48e5cb5480e08ab1fa4528a9a0f1529f11     
 
 LogID: c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d
 Index: 18669804
@@ -271,53 +274,51 @@ attestation with sbom.  Note the kaniko attestation here includes the full cyclo
 
 ```bash
 rekor-cli get --rekor_server https://rekor.sigstore.dev \
-   --uuid 24296fb24b8ad77af174e0898b660977bf7edcd85e714b120e158ee7ce7d144b9500de5602665516         
+   --uuid 24296fb24b8ad77a61fa48c55a19124687ede29f830a6478d0316128ed4785cefcbde5d1423275e8         
 
 LogID: c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d
-Attestation: {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://cyclonedx.org/bom/v1.4","subject":[{"name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild","digest":{"sha256":"bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1"}}],"predicate":{"bomFormat":"CycloneDX","components":[{"bom-ref":"pkg:deb/debian/base-files@10.3+deb10u9?arch=amd64\u0026distro=debian-10\u0026package-id=5aa6e4929bf16696","cpe":"cpe:2.3:a:base-files:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*","licenses":[{"license":{"name":"GPL"}}],"name":"base-files","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:cpe23","value":"cpe:2.3:a:base-files:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base_files:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base_files:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/base-files/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/base"},{"name":"syft:metadata:installedSize","value":"340"}],"publisher":"Santiago Vila \u003csanvila@debian.org\u003e","purl":"pkg:deb/debian/base-files@10.3+deb10u9?arch=amd64\u0026distro=debian-10","type":"library","version":"10.3+deb10u9"},{"bom-ref":"pkg:golang/github.com/gorilla/mux@v1.8.0?package-id=b8fb11cf7e63c7fc","cpe":"cpe:2.3:a:gorilla:mux:v1.8.0:*:*:*:*:*:*:*","name":"github.com/gorilla/mux","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:4f5bffb7ae27517828f09cdb776b8f037651ecdc9f3b821b40b1037346628493"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/github.com/gorilla/mux@v1.8.0","type":"library","version":"v1.8.0"},{"bom-ref":"pkg:golang/github.com/salrashid123/cosign_bazel_cloud_build/app@v0.0.0-20230422195426-fc9286ba352f?package-id=e0303e9ed3064dfd","cpe":"cpe:2.3:a:salrashid123:cosign-bazel-cloud-build\\/app:v0.0.0-20230422195426-fc9286ba352f:*:*:*:*:*:*:*","name":"github.com/salrashid123/cosign_bazel_cloud_build/app","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:cpe23","value":"cpe:2.3:a:salrashid123:cosign_bazel_cloud_build\\/app:v0.0.0-20230422195426-fc9286ba352f:*:*:*:*:*:*:*"},{"name":"syft:location:0:layerID","value":"sha256:4f5bffb7ae27517828f09cdb776b8f037651ecdc9f3b821b40b1037346628493"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goBuildSettings:-compiler","value":"gc"},{"name":"syft:metadata:goBuildSettings:CGO_ENABLED","value":"1"},{"name":"syft:metadata:goBuildSettings:GOAMD64","value":"v1"},{"name":"syft:metadata:goBuildSettings:GOARCH","value":"amd64"},{"name":"syft:metadata:goBuildSettings:GOOS","value":"linux"},{"name":"syft:metadata:goBuildSettings:vcs","value":"git"},{"name":"syft:metadata:goBuildSettings:vcs.modified","value":"false"},{"name":"syft:metadata:goBuildSettings:vcs.revision","value":"fc9286ba352fd0207dbf3d3bc0bad0198ab5d9ec"},{"name":"syft:metadata:goBuildSettings:vcs.time","value":"2023-04-22T19:54:26Z"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/github.com/salrashid123/cosign_bazel_cloud_build/app@v0.0.0-20230422195426-fc9286ba352f","type":"library","version":"v0.0.0-20230422195426-fc9286ba352f"},{"bom-ref":"pkg:golang/golang.org/x/net@v0.0.0-20220921203646-d300de134e69?package-id=54a64e800919b8c7","cpe":"cpe:2.3:a:golang:x\\/net:v0.0.0-20220921203646-d300de134e69:*:*:*:*:*:*:*","name":"golang.org/x/net","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:4f5bffb7ae27517828f09cdb776b8f037651ecdc9f3b821b40b1037346628493"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:hUJpGDpnfwdJW8iNypFjmSY0sCBEL+spFTZ2eO+Sfps="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/golang.org/x/net@v0.0.0-20220921203646-d300de134e69","type":"library","version":"v0.0.0-20220921203646-d300de134e69"},{"bom-ref":"pkg:golang/golang.org/x/text@v0.3.7?package-id=4df8f317ccc61a57","cpe":"cpe:2.3:a:golang:x\\/text:v0.3.7:*:*:*:*:*:*:*","name":"golang.org/x/text","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:4f5bffb7ae27517828f09cdb776b8f037651ecdc9f3b821b40b1037346628493"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/golang.org/x/text@v0.3.7","type":"library","version":"v0.3.7"},{"bom-ref":"pkg:deb/debian/libc6@2.28-10?arch=amd64\u0026upstream=glibc\u0026distro=debian-10\u0026package-id=74ac5ee7adfb6a2d","cpe":"cpe:2.3:a:libc6:libc6:2.28-10:*:*:*:*:*:*:*","licenses":[{"license":{"id":"GPL-2.0-only"}},{"license":{"id":"LGPL-2.1-only"}}],"name":"libc6","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/libc6/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/libc6"},{"name":"syft:metadata:installedSize","value":"12337"},{"name":"syft:metadata:source","value":"glibc"}],"publisher":"GNU Libc Maintainers \u003cdebian-glibc@lists.debian.org\u003e","purl":"pkg:deb/debian/libc6@2.28-10?arch=amd64\u0026upstream=glibc\u0026distro=debian-10","type":"library","version":"2.28-10"},{"bom-ref":"pkg:deb/debian/libssl1.1@1.1.1d-0+deb10u6?arch=amd64\u0026upstream=openssl\u0026distro=debian-10\u0026package-id=ab8b40f4f3d74be0","cpe":"cpe:2.3:a:libssl1.1:libssl1.1:1.1.1d-0\\+deb10u6:*:*:*:*:*:*:*","name":"libssl1.1","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/libssl1.1/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/libssl1"},{"name":"syft:metadata:installedSize","value":"4077"},{"name":"syft:metadata:source","value":"openssl"}],"publisher":"Debian OpenSSL Team \u003cpkg-openssl-devel@lists.alioth.debian.org\u003e","purl":"pkg:deb/debian/libssl1.1@1.1.1d-0+deb10u6?arch=amd64\u0026upstream=openssl\u0026distro=debian-10","type":"library","version":"1.1.1d-0+deb10u6"},{"bom-ref":"pkg:deb/debian/netbase@5.6?arch=all\u0026distro=debian-10\u0026package-id=b55e51dca4eba9a6","cpe":"cpe:2.3:a:netbase:netbase:5.6:*:*:*:*:*:*:*","licenses":[{"license":{"id":"GPL-2.0-only"}}],"name":"netbase","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/netbase/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/netbase"},{"name":"syft:metadata:installedSize","value":"44"}],"publisher":"Marco d'Itri \u003cmd@linux.it\u003e","purl":"pkg:deb/debian/netbase@5.6?arch=all\u0026distro=debian-10","type":"library","version":"5.6"},{"bom-ref":"pkg:deb/debian/openssl@1.1.1d-0+deb10u6?arch=amd64\u0026distro=debian-10\u0026package-id=5baa662d4c747c2e","cpe":"cpe:2.3:a:openssl:openssl:1.1.1d-0\\+deb10u6:*:*:*:*:*:*:*","name":"openssl","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/openssl/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/openssl"},{"name":"syft:metadata:installedSize","value":"1460"}],"publisher":"Debian OpenSSL Team \u003cpkg-openssl-devel@lists.alioth.debian.org\u003e","purl":"pkg:deb/debian/openssl@1.1.1d-0+deb10u6?arch=amd64\u0026distro=debian-10","type":"library","version":"1.1.1d-0+deb10u6"},{"bom-ref":"pkg:deb/debian/tzdata@2021a-0+deb10u1?arch=all\u0026distro=debian-10\u0026package-id=9e5b2198bbbd7fb0","cpe":"cpe:2.3:a:tzdata:tzdata:2021a-0\\+deb10u1:*:*:*:*:*:*:*","name":"tzdata","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/tzdata/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/tzdata"},{"name":"syft:metadata:installedSize","value":"3040"}],"publisher":"GNU Libc Maintainers \u003cdebian-glibc@lists.debian.org\u003e","purl":"pkg:deb/debian/tzdata@2021a-0+deb10u1?arch=all\u0026distro=debian-10","type":"library","version":"2021a-0+deb10u1"},{"description":"Distroless","externalReferences":[{"type":"issue-tracker","url":"https://github.com/GoogleContainerTools/distroless/issues/new"},{"type":"website","url":"https://github.com/GoogleContainerTools/distroless"},{"comment":"support","type":"other","url":"https://github.com/GoogleContainerTools/distroless/blob/master/README.md"}],"name":"debian","properties":[{"name":"syft:distro:id","value":"debian"},{"name":"syft:distro:prettyName","value":"Distroless"},{"name":"syft:distro:versionID","value":"10"}],"swid":{"name":"debian","tagId":"debian","version":"10"},"type":"operating-system","version":"10"}],"metadata":{"component":{"bom-ref":"5709fbf328a0af67","name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1/repo1/securebuild@sha256:bf03a87c3e4559442a810d9cbd734c16b0f5e4f180dc0ace2e58fe7351d842b1","type":"container","version":"sha256:87ff155042719d627d441005f678028b03d78d1721f812fc8fb5b2c6f7913cc1"},"timestamp":"2023-04-22T19:56:18Z","tools":[{"name":"syft","vendor":"anchore","version":"0.78.0"}]},"serialNumber":"urn:uuid:f43b8443-cdff-4bae-8d06-96fbf90b4c89","specVersion":"1.4","version":1}}
-Index: 18669803
-IntegratedTime: 2023-04-22T19:56:20Z
-UUID: 24296fb24b8ad77af174e0898b660977bf7edcd85e714b120e158ee7ce7d144b9500de5602665516
+Attestation: {"_type":"https://in-toto.io/Statement/v0.1","predicateType":"https://cyclonedx.org/bom/v1.4","subject":[{"name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1-384813/repo1/securebuild","digest":{"sha256":"5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935"}}],"predicate":{"bomFormat":"CycloneDX","components":[{"bom-ref":"pkg:deb/debian/base-files@10.3+deb10u9?arch=amd64\u0026distro=debian-10\u0026package-id=5aa6e4929bf16696","cpe":"cpe:2.3:a:base-files:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*","licenses":[{"license":{"name":"GPL"}}],"name":"base-files","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:cpe23","value":"cpe:2.3:a:base-files:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base_files:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base_files:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base:base-files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:cpe23","value":"cpe:2.3:a:base:base_files:10.3\\+deb10u9:*:*:*:*:*:*:*"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/base-files/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/base"},{"name":"syft:metadata:installedSize","value":"340"}],"publisher":"Santiago Vila \u003csanvila@debian.org\u003e","purl":"pkg:deb/debian/base-files@10.3+deb10u9?arch=amd64\u0026distro=debian-10","type":"library","version":"10.3+deb10u9"},{"bom-ref":"pkg:golang/github.com/gorilla/mux@v1.8.0?package-id=b8fb11cf7e63c7fc","cpe":"cpe:2.3:a:gorilla:mux:v1.8.0:*:*:*:*:*:*:*","name":"github.com/gorilla/mux","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:e6e79b86459a23fd3a9632f825daaea3b6b826767fc716153fe2823d53ec6a54"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/github.com/gorilla/mux@v1.8.0","type":"library","version":"v1.8.0"},{"bom-ref":"pkg:golang/github.com/salrashid123/cosign_bazel_cloud_build/app@(devel)?package-id=a4b8b8266ee720f1","cpe":"cpe:2.3:a:salrashid123:cosign-bazel-cloud-build\\/app:\\(devel\\):*:*:*:*:*:*:*","name":"github.com/salrashid123/cosign_bazel_cloud_build/app","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:cpe23","value":"cpe:2.3:a:salrashid123:cosign_bazel_cloud_build\\/app:\\(devel\\):*:*:*:*:*:*:*"},{"name":"syft:location:0:layerID","value":"sha256:e6e79b86459a23fd3a9632f825daaea3b6b826767fc716153fe2823d53ec6a54"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goBuildSettings:-compiler","value":"gc"},{"name":"syft:metadata:goBuildSettings:CGO_ENABLED","value":"1"},{"name":"syft:metadata:goBuildSettings:GOAMD64","value":"v1"},{"name":"syft:metadata:goBuildSettings:GOARCH","value":"amd64"},{"name":"syft:metadata:goBuildSettings:GOOS","value":"linux"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/github.com/salrashid123/cosign_bazel_cloud_build/app@(devel)","type":"library","version":"(devel)"},{"bom-ref":"pkg:golang/golang.org/x/net@v0.0.0-20220921203646-d300de134e69?package-id=54a64e800919b8c7","cpe":"cpe:2.3:a:golang:x\\/net:v0.0.0-20220921203646-d300de134e69:*:*:*:*:*:*:*","name":"golang.org/x/net","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:e6e79b86459a23fd3a9632f825daaea3b6b826767fc716153fe2823d53ec6a54"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:hUJpGDpnfwdJW8iNypFjmSY0sCBEL+spFTZ2eO+Sfps="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/golang.org/x/net@v0.0.0-20220921203646-d300de134e69","type":"library","version":"v0.0.0-20220921203646-d300de134e69"},{"bom-ref":"pkg:golang/golang.org/x/text@v0.3.7?package-id=4df8f317ccc61a57","cpe":"cpe:2.3:a:golang:x\\/text:v0.3.7:*:*:*:*:*:*:*","name":"golang.org/x/text","properties":[{"name":"syft:package:foundBy","value":"go-module-binary-cataloger"},{"name":"syft:package:language","value":"go"},{"name":"syft:package:metadataType","value":"GolangBinMetadata"},{"name":"syft:package:type","value":"go-module"},{"name":"syft:location:0:layerID","value":"sha256:e6e79b86459a23fd3a9632f825daaea3b6b826767fc716153fe2823d53ec6a54"},{"name":"syft:location:0:path","value":"/server"},{"name":"syft:metadata:architecture","value":"amd64"},{"name":"syft:metadata:goCompiledVersion","value":"go1.19.8"},{"name":"syft:metadata:h1Digest","value":"h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk="},{"name":"syft:metadata:mainModule","value":"github.com/salrashid123/cosign_bazel_cloud_build/app"}],"purl":"pkg:golang/golang.org/x/text@v0.3.7","type":"library","version":"v0.3.7"},{"bom-ref":"pkg:deb/debian/libc6@2.28-10?arch=amd64\u0026upstream=glibc\u0026distro=debian-10\u0026package-id=74ac5ee7adfb6a2d","cpe":"cpe:2.3:a:libc6:libc6:2.28-10:*:*:*:*:*:*:*","licenses":[{"license":{"id":"GPL-2.0-only"}},{"license":{"id":"LGPL-2.1-only"}}],"name":"libc6","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/libc6/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/libc6"},{"name":"syft:metadata:installedSize","value":"12337"},{"name":"syft:metadata:source","value":"glibc"}],"publisher":"GNU Libc Maintainers \u003cdebian-glibc@lists.debian.org\u003e","purl":"pkg:deb/debian/libc6@2.28-10?arch=amd64\u0026upstream=glibc\u0026distro=debian-10","type":"library","version":"2.28-10"},{"bom-ref":"pkg:deb/debian/libssl1.1@1.1.1d-0+deb10u6?arch=amd64\u0026upstream=openssl\u0026distro=debian-10\u0026package-id=ab8b40f4f3d74be0","cpe":"cpe:2.3:a:libssl1.1:libssl1.1:1.1.1d-0\\+deb10u6:*:*:*:*:*:*:*","name":"libssl1.1","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/libssl1.1/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/libssl1"},{"name":"syft:metadata:installedSize","value":"4077"},{"name":"syft:metadata:source","value":"openssl"}],"publisher":"Debian OpenSSL Team \u003cpkg-openssl-devel@lists.alioth.debian.org\u003e","purl":"pkg:deb/debian/libssl1.1@1.1.1d-0+deb10u6?arch=amd64\u0026upstream=openssl\u0026distro=debian-10","type":"library","version":"1.1.1d-0+deb10u6"},{"bom-ref":"pkg:deb/debian/netbase@5.6?arch=all\u0026distro=debian-10\u0026package-id=b55e51dca4eba9a6","cpe":"cpe:2.3:a:netbase:netbase:5.6:*:*:*:*:*:*:*","licenses":[{"license":{"id":"GPL-2.0-only"}}],"name":"netbase","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/netbase/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/netbase"},{"name":"syft:metadata:installedSize","value":"44"}],"publisher":"Marco d'Itri \u003cmd@linux.it\u003e","purl":"pkg:deb/debian/netbase@5.6?arch=all\u0026distro=debian-10","type":"library","version":"5.6"},{"bom-ref":"pkg:deb/debian/openssl@1.1.1d-0+deb10u6?arch=amd64\u0026distro=debian-10\u0026package-id=5baa662d4c747c2e","cpe":"cpe:2.3:a:openssl:openssl:1.1.1d-0\\+deb10u6:*:*:*:*:*:*:*","name":"openssl","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:0:path","value":"/usr/share/doc/openssl/copyright"},{"name":"syft:location:1:layerID","value":"sha256:f4d542ed5244573730cc1531492c544507f8b1e7eabda02abf10ca7b5e937589"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/openssl"},{"name":"syft:metadata:installedSize","value":"1460"}],"publisher":"Debian OpenSSL Team \u003cpkg-openssl-devel@lists.alioth.debian.org\u003e","purl":"pkg:deb/debian/openssl@1.1.1d-0+deb10u6?arch=amd64\u0026distro=debian-10","type":"library","version":"1.1.1d-0+deb10u6"},{"bom-ref":"pkg:deb/debian/tzdata@2021a-0+deb10u1?arch=all\u0026distro=debian-10\u0026package-id=9e5b2198bbbd7fb0","cpe":"cpe:2.3:a:tzdata:tzdata:2021a-0\\+deb10u1:*:*:*:*:*:*:*","name":"tzdata","properties":[{"name":"syft:package:foundBy","value":"dpkgdb-cataloger"},{"name":"syft:package:metadataType","value":"DpkgMetadata"},{"name":"syft:package:type","value":"deb"},{"name":"syft:location:0:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:0:path","value":"/usr/share/doc/tzdata/copyright"},{"name":"syft:location:1:layerID","value":"sha256:b5c218e3bb6075af8dcb55250a52f873d3469437f465cf5d8e852e0421c085b8"},{"name":"syft:location:1:path","value":"/var/lib/dpkg/status.d/tzdata"},{"name":"syft:metadata:installedSize","value":"3040"}],"publisher":"GNU Libc Maintainers \u003cdebian-glibc@lists.debian.org\u003e","purl":"pkg:deb/debian/tzdata@2021a-0+deb10u1?arch=all\u0026distro=debian-10","type":"library","version":"2021a-0+deb10u1"},{"description":"Distroless","externalReferences":[{"type":"issue-tracker","url":"https://github.com/GoogleContainerTools/distroless/issues/new"},{"type":"website","url":"https://github.com/GoogleContainerTools/distroless"},{"comment":"support","type":"other","url":"https://github.com/GoogleContainerTools/distroless/blob/master/README.md"}],"name":"debian","properties":[{"name":"syft:distro:id","value":"debian"},{"name":"syft:distro:prettyName","value":"Distroless"},{"name":"syft:distro:versionID","value":"10"}],"swid":{"name":"debian","tagId":"debian","version":"10"},"type":"operating-system","version":"10"}],"metadata":{"component":{"bom-ref":"b8a4c1139c17fd58","name":"us-central1-docker.pkg.dev/cosign-test-kaniko-1-384813/repo1/securebuild@sha256:5e065a75f1dd137db2a1d7a5aada2160668cb5cb705732d8877e2c362cfc5935","type":"container","version":"sha256:8695e08ead32b1027e407da433049e8b23a357b13cdf20a825b06f0352d24c00"},"timestamp":"2023-04-25T13:11:03Z","tools":[{"name":"syft","vendor":"anchore","version":"0.78.0"}]},"serialNumber":"urn:uuid:0cdddce1-620f-4ab1-b2c6-968db5e02b9c","specVersion":"1.4","version":1}}
+Index: 18896193
+IntegratedTime: 2023-04-25T13:11:05Z
+UUID: 24296fb24b8ad77a61fa48c55a19124687ede29f830a6478d0316128ed4785cefcbde5d1423275e8
 Body: {
   "IntotoObj": {
     "content": {
       "hash": {
         "algorithm": "sha256",
-        "value": "7298409da863607bc1e49702c9a3a1e245598f7222e3066fe23c6ffc4efa623f"
+        "value": "7ee142fc8c2d08b29fcb53fa5e1b9af5a3d65f8a792ae9503e257c0b9cab6f97"
       },
       "payloadHash": {
         "algorithm": "sha256",
-        "value": "d8af76051c0a4984e997f059c3be0dbbce20b548173d780c318a8944a52ab95a"
+        "value": "b350df4d65b154a3538b74b27ef8c4a561be12d0bce2cee30c4867abe23e9854"
       }
     },
-    "publicKey": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM2ekNDQW5LZ0F3SUJBZ0lVQisvM0l6VGtVbFZ6WVhCSHVxY09la01LZU1Rd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpNd05ESXlNVGsxTmpFNVdoY05Nak13TkRJeU1qQXdOakU1V2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUVFNmtmQjhqenl2TjdxZDRDRFBJZExySGNYeStodWt6RHNMZUIKSW03Z1ZpVnM4UmlQM1IrK2oxNnhrR2NRTW5TWW5KT3c5anZaVktPSTFqMmNTVUFuWXFPQ0FaRXdnZ0dOTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVRZTdhCjBiMjhNMUQwaXIwZ2tFNXVqL2JBTlZnd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d1FRWURWUjBSQVFIL0JEY3dOWUV6WTI5emFXZHVRR052YzJsbmJpMTBaWE4wTFd0aGJtbHJieTB4TG1saApiUzVuYzJWeWRtbGpaV0ZqWTI5MWJuUXVZMjl0TUNrR0Npc0dBUVFCZzc4d0FRRUVHMmgwZEhCek9pOHZZV05qCmIzVnVkSE11WjI5dloyeGxMbU52YlRBckJnb3JCZ0VFQVlPL01BRUlCQjBNRzJoMGRIQnpPaTh2WVdOamIzVnUKZEhNdVoyOXZaMnhsTG1OdmJUQ0JpZ1lLS3dZQkJBSFdlUUlFQWdSOEJIb0FlQUIyQU4wOU1Hckd4eEV5WXhrZQpISmxuTndLaVNsNjQzanl0LzRlS2NvQXZLZTZPQUFBQmg2cUo3N2tBQUFRREFFY3dSUUlnTG9HaFNZM3hCbGt3CloydC91Y1hlS0FFaFBJSExEUit4WEkwMWt1ZUVubVVDSVFEYXY0QzdRNlZybG5RamEwbDkrc2lqQ0lUVG0wSmsKdUxyK05uS3pTUlhTUmpBS0JnZ3Foa2pPUFFRREF3Tm5BREJrQWpCTm96YlFTL2hUaXBmUGlGR3dzMmhUTWU5Swo2N1ZDK3Vra2NEdHlSSEtIeUxKSkZYNm5sRHlqUkZGa1BtL2JmYUFDTUJNQUxZWWhhYjJMaUoySllMMElCMDBJClE4My9CV1lRTHY3eTJvbjBOWVZWMVo3WW0zZ1hDbEtkMmFmQ0V3L21hQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+    "publicKey": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM5RENDQW5tZ0F3SUJBZ0lVSlFNQ0dWeWZLeGFMaGw4ZWUyMzNzaytxZlgwd0NnWUlLb1pJemowRUF3TXcKTnpFVk1CTUdBMVVFQ2hNTWMybG5jM1J2Y21VdVpHVjJNUjR3SEFZRFZRUURFeFZ6YVdkemRHOXlaUzFwYm5SbApjbTFsWkdsaGRHVXdIaGNOTWpNd05ESTFNVE14TVRBMFdoY05Nak13TkRJMU1UTXlNVEEwV2pBQU1Ga3dFd1lICktvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRFFnQUU4RzFXS0s5S0FiVWZ2eFBJRnIyUkpSMmsxcUl4Z3kzM0dWQjAKb2hiWW1mNWJXWU5NSExWa3hZVTFBWk9DQkhxTGRNOEMycGdLTzZxYllOVE9CenBRUTZPQ0FaZ3dnZ0dVTUE0RwpBMVVkRHdFQi93UUVBd0lIZ0RBVEJnTlZIU1VFRERBS0JnZ3JCZ0VGQlFjREF6QWRCZ05WSFE0RUZnUVVsRUhHCkRydkRQeTZObzFxSzRUdVpoMmN1OGtzd0h3WURWUjBqQkJnd0ZvQVUzOVBwejFZa0VaYjVxTmpwS0ZXaXhpNFkKWkQ4d1NBWURWUjBSQVFIL0JENHdQSUU2WTI5emFXZHVRR052YzJsbmJpMTBaWE4wTFd0aGJtbHJieTB4TFRNNApORGd4TXk1cFlXMHVaM05sY25acFkyVmhZMk52ZFc1MExtTnZiVEFwQmdvckJnRUVBWU8vTUFFQkJCdG9kSFJ3CmN6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjB3S3dZS0t3WUJCQUdEdnpBQkNBUWREQnRvZEhSd2N6b3YKTDJGalkyOTFiblJ6TG1kdmIyZHNaUzVqYjIwd2dZb0dDaXNHQVFRQjFua0NCQUlFZkFSNkFIZ0FkZ0RkUFRCcQp4c2NSTW1NWkhoeVpaemNDb2twZXVONDhyZitIaW5LQUx5bnVqZ0FBQVllNGlnRE5BQUFFQXdCSE1FVUNJUUMvCjQ1SzhHeDllSHA0RHN4YnlheFVnbXpOUDdrd0o5ZEFLd3h4S0ZrZklUZ0lnQks0QTlsT1VDRmJPVjUzNjZhdHMKNm1OSFpZRmNUNnJpYmRwbExQS1FGQUV3Q2dZSUtvWkl6ajBFQXdNRGFRQXdaZ0l4QUx2dDJnMnBQSmdwRHlaUwp5RHpFemR1a21UUlM0azhRS1ZhdVVpTStXLzc3eDJMVUQ3dmhZYU9tNUt0MnE1Z0NOUUl4QUtRUTJ6MldWdytxCmcrc05YVnhNOXcrSFE2aGJ2cWR2dGUrckhmd1NqaXFDcDYzZm8rb01GMytHNDk2NThxTzNNQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
   }
 }
-
 ```
 
 where in my case the public key from the rekor entry is
 
 ```
 -----BEGIN CERTIFICATE-----
-MIIC6zCCAnKgAwIBAgIUB+/3IzTkUlVzYXBHuqcOekMKeMQwCgYIKoZIzj0EAwMw
+MIIC9DCCAnmgAwIBAgIUJQMCGVyfKxaLhl8ee233sk+qfX0wCgYIKoZIzj0EAwMw
 NzEVMBMGA1UEChMMc2lnc3RvcmUuZGV2MR4wHAYDVQQDExVzaWdzdG9yZS1pbnRl
-cm1lZGlhdGUwHhcNMjMwNDIyMTk1NjE5WhcNMjMwNDIyMjAwNjE5WjAAMFkwEwYH
-KoZIzj0CAQYIKoZIzj0DAQcDQgAEE6kfB8jzyvN7qd4CDPIdLrHcXy+hukzDsLeB
-Im7gViVs8RiP3R++j16xkGcQMnSYnJOw9jvZVKOI1j2cSUAnYqOCAZEwggGNMA4G
-A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUQe7a
-0b28M1D0ir0gkE5uj/bANVgwHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
-ZD8wQQYDVR0RAQH/BDcwNYEzY29zaWduQGNvc2lnbi10ZXN0LWthbmlrby0xLmlh
-bS5nc2VydmljZWFjY291bnQuY29tMCkGCisGAQQBg78wAQEEG2h0dHBzOi8vYWNj
-b3VudHMuZ29vZ2xlLmNvbTArBgorBgEEAYO/MAEIBB0MG2h0dHBzOi8vYWNjb3Vu
-dHMuZ29vZ2xlLmNvbTCBigYKKwYBBAHWeQIEAgR8BHoAeAB2AN09MGrGxxEyYxke
-HJlnNwKiSl643jyt/4eKcoAvKe6OAAABh6qJ77kAAAQDAEcwRQIgLoGhSY3xBlkw
-Z2t/ucXeKAEhPIHLDR+xXI01kueEnmUCIQDav4C7Q6VrlnQja0l9+sijCITTm0Jk
-uLr+NnKzSRXSRjAKBggqhkjOPQQDAwNnADBkAjBNozbQS/hTipfPiFGws2hTMe9K
-67VC+ukkcDtyRHKHyLJJFX6nlDyjRFFkPm/bfaACMBMALYYhab2LiJ2JYL0IB00I
-Q83/BWYQLv7y2on0NYVV1Z7Ym3gXClKd2afCEw/maA==
+cm1lZGlhdGUwHhcNMjMwNDI1MTMxMTA0WhcNMjMwNDI1MTMyMTA0WjAAMFkwEwYH
+KoZIzj0CAQYIKoZIzj0DAQcDQgAE8G1WKK9KAbUfvxPIFr2RJR2k1qIxgy33GVB0
+ohbYmf5bWYNMHLVkxYU1AZOCBHqLdM8C2pgKO6qbYNTOBzpQQ6OCAZgwggGUMA4G
+A1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggrBgEFBQcDAzAdBgNVHQ4EFgQUlEHG
+DrvDPy6No1qK4TuZh2cu8kswHwYDVR0jBBgwFoAU39Ppz1YkEZb5qNjpKFWixi4Y
+ZD8wSAYDVR0RAQH/BD4wPIE6Y29zaWduQGNvc2lnbi10ZXN0LWthbmlrby0xLTM4
+NDgxMy5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbTApBgorBgEEAYO/MAEBBBtodHRw
+czovL2FjY291bnRzLmdvb2dsZS5jb20wKwYKKwYBBAGDvzABCAQdDBtodHRwczov
+L2FjY291bnRzLmdvb2dsZS5jb20wgYoGCisGAQQB1nkCBAIEfAR6AHgAdgDdPTBq
+xscRMmMZHhyZZzcCokpeuN48rf+HinKALynujgAAAYe4igDNAAAEAwBHMEUCIQC/
+45K8Gx9eHp4DsxbyaxUgmzNP7kwJ9dAKwxxKFkfITgIgBK4A9lOUCFbOV5366ats
+6mNHZYFcT6ribdplLPKQFAEwCgYIKoZIzj0EAwMDaQAwZgIxALvt2g2pPJgpDyZS
+yDzEzdukmTRS4k8QKVauUiM+W/77x2LUD7vhYaOm5Kt2q5gCNQIxAKQQ2z2WVw+q
+g+sNXVxM9w+HQ6hbvqdvte+rHfwSjiqCp63fo+oMF3+G49658qO3MA==
 -----END CERTIFICATE-----
-
 ```
 
 
@@ -330,22 +331,22 @@ Certificate:
     Data:
         Version: 3 (0x2)
         Serial Number:
-            07:ef:f7:23:34:e4:52:55:73:61:70:47:ba:a7:0e:7a:43:0a:78:c4
+            25:03:02:19:5c:9f:2b:16:8b:86:5f:1e:7b:6d:f7:b2:4f:aa:7d:7d
         Signature Algorithm: ecdsa-with-SHA384
         Issuer: O = sigstore.dev, CN = sigstore-intermediate
         Validity
-            Not Before: Apr 22 19:56:19 2023 GMT
-            Not After : Apr 22 20:06:19 2023 GMT
+            Not Before: Apr 25 13:11:04 2023 GMT
+            Not After : Apr 25 13:21:04 2023 GMT
         Subject: 
         Subject Public Key Info:
             Public Key Algorithm: id-ecPublicKey
                 Public-Key: (256 bit)
                 pub:
-                    04:13:a9:1f:07:c8:f3:ca:f3:7b:a9:de:02:0c:f2:
-                    1d:2e:b1:dc:5f:2f:a1:ba:4c:c3:b0:b7:81:22:6e:
-                    e0:56:25:6c:f1:18:8f:dd:1f:be:8f:5e:b1:90:67:
-                    10:32:74:98:9c:93:b0:f6:3b:d9:54:a3:88:d6:3d:
-                    9c:49:40:27:62
+                    04:f0:6d:56:28:af:4a:01:b5:1f:bf:13:c8:16:bd:
+                    91:25:1d:a4:d6:a2:31:83:2d:f7:19:50:74:a2:16:
+                    d8:99:fe:5b:59:83:4c:1c:b5:64:c5:85:35:01:93:
+                    82:04:7a:8b:74:cf:02:da:98:0a:3b:aa:9b:60:d4:
+                    ce:07:3a:50:43
                 ASN1 OID: prime256v1
                 NIST CURVE: P-256
         X509v3 extensions:
@@ -354,11 +355,11 @@ Certificate:
             X509v3 Extended Key Usage: 
                 Code Signing
             X509v3 Subject Key Identifier: 
-                41:EE:DA:D1:BD:BC:33:50:F4:8A:BD:20:90:4E:6E:8F:F6:C0:35:58
+                94:41:C6:0E:BB:C3:3F:2E:8D:A3:5A:8A:E1:3B:99:87:67:2E:F2:4B
             X509v3 Authority Key Identifier: 
                 DF:D3:E9:CF:56:24:11:96:F9:A8:D8:E9:28:55:A2:C6:2E:18:64:3F
             X509v3 Subject Alternative Name: critical
-                email:cosign@cosign-test-kaniko-1.iam.gserviceaccount.com
+                email:cosign@cosign-test-kaniko-1-384813.iam.gserviceaccount.com          <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             1.3.6.1.4.1.57264.1.1: 
                 https://accounts.google.com
             1.3.6.1.4.1.57264.1.8: 
@@ -368,13 +369,20 @@ Certificate:
                     Version   : v1 (0x0)
                     Log ID    : DD:3D:30:6A:C6:C7:11:32:63:19:1E:1C:99:67:37:02:
                                 A2:4A:5E:B8:DE:3C:AD:FF:87:8A:72:80:2F:29:EE:8E
-                    Timestamp : Apr 22 19:56:19.257 2023 GMT
+                    Timestamp : Apr 25 13:11:04.653 2023 GMT
                     Extensions: none
                     Signature : ecdsa-with-SHA256
-                                30:45:02:20:2E:81:A1:49:8D:F1:06:59:30:67:6B:7F:
-                                B9:C5:DE:28:01:21:3C:81:CB:0D:1F:B1:5C:8D:35:92:
-                                E7:84:9E:65:02:21:00:DA:BF:80:BB:43:A5:6B:96:74:
-                                23:6B:49:7D:FA:C8:A3:08:84:D3:9B:42:64:B8:BA:FE:
-                                36:72:B3:49:15:D2:46
-
+                                30:45:02:21:00:BF:E3:92:BC:1B:1F:5E:1E:9E:03:B3:
+                                16:F2:6B:15:20:9B:33:4F:EE:4C:09:F5:D0:0A:C3:1C:
+                                4A:16:47:C8:4E:02:20:04:AE:00:F6:53:94:08:56:CE:
+                                57:9D:FA:E9:AB:6C:EA:63:47:65:81:5C:4F:AA:E2:6D:
+                                DA:65:2C:F2:90:14:01
+    Signature Algorithm: ecdsa-with-SHA384
+    Signature Value:
+        30:66:02:31:00:bb:ed:da:0d:a9:3c:98:29:0f:26:52:c8:3c:
+        c4:cd:db:a4:99:34:52:e2:4f:10:29:56:ae:52:23:3e:5b:fe:
+        fb:c7:62:d4:0f:bb:e1:61:a3:a6:e4:ab:76:ab:98:02:35:02:
+        31:00:a4:10:db:3d:96:57:0f:aa:83:eb:0d:5d:5c:4c:f7:0f:
+        87:43:a8:5b:be:a7:6f:b5:ef:ab:1d:fc:12:8e:2a:82:a7:ad:
+        df:a3:ea:0c:17:7f:86:e3:de:b9:f2:a3:b7:30
 ```
