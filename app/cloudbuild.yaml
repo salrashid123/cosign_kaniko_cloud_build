@@ -7,7 +7,7 @@ steps:
         "--context=dir:///workspace",
         "--reproducible",
         "--image-name-with-digest-file=/workspace/name_hash.txt",
-        "--destination=us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild:server",
+        "--destination=us-central1-docker.pkg.dev/$PROJECT_ID/repo1/securebuild-kaniko:server",
       ] 
 
   - id: attestations
@@ -125,7 +125,6 @@ steps:
       cosign sign --annotations=commit_sha=$COMMIT_SHA --attachment=sbom --key gcpkms://projects/$PROJECT_ID/locations/global/keyRings/cosignkr/cryptoKeys/key1/cryptoKeyVersions/1 $(cat /workspace/name_hash.txt)
     waitFor: ['attach_sbom']
 
-serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cosign@$PROJECT_ID.iam.gserviceaccount.com'
+serviceAccount: 'projects/$PROJECT_ID/serviceAccounts/cosign-kaniko@$PROJECT_ID.iam.gserviceaccount.com'
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'N1_HIGHCPU_32'
